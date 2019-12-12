@@ -78,65 +78,13 @@ public class Avatar : MonoBehaviour
             localTPoseRotation = GetSkeletonBone(animator, t.name).rotation * localTPoseRotation;
         }
 
-        Quaternion localKinectRotationInverse = GetLocalKinectRotationInverse(jointType);
-
         // return new joint with localTPoseRotation and localKinectRotationInverse
-        return new Joint(jointType, transform, localTPoseRotation, localKinectRotationInverse, rootTransform);
+        return new Joint(jointType, transform, localTPoseRotation, rootTransform);
 
     }
 
     private static SkeletonBone GetSkeletonBone(Animator animator, string boneName) => animator.avatar.humanDescription.skeleton.First(sb => sb.name == boneName);
 
-    private Quaternion GetLocalKinectRotationInverse(Joint.JointName jointType)
-    {
-        // Used this page as reference for T-pose orientations
-        // https://docs.microsoft.com/en-us/azure/Kinect-dk/body-joints
-        // Assuming T-pose as body facing Z+, with head at Y+. Same for target character
-        // Coordinate system seems to be left-handed not right handed as depicted
-        // Thus inverse T-pose rotation should align Y and Z axes of depicted local coords for a joint with body coords in T-pose
-        switch (jointType)
-        {
-            case Joint.JointName.HIPS:
-            case Joint.JointName.SPINE:
-            case Joint.JointName.CHEST:
-            case Joint.JointName.NECK:
-            case Joint.JointName.HEAD:
-            case Joint.JointName.UPLEG_L:
-            case Joint.JointName.LEG_L:
-            case Joint.JointName.FOOT_L:
-                return Quaternion.AngleAxis(90, Vector3.forward) * Quaternion.AngleAxis(-90, Vector3.up);
-
-            case Joint.JointName.TOE_L:
-                return Quaternion.AngleAxis(-90, Vector3.up);
-
-            case Joint.JointName.UPLEG_R:
-            case Joint.JointName.LEG_R:
-            case Joint.JointName.FOOT_R:
-                return Quaternion.AngleAxis(-90, Vector3.forward) * Quaternion.AngleAxis(-90, Vector3.up);
-
-            case Joint.JointName.TOE_R:
-                return Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.AngleAxis(-90, Vector3.up);
-
-            case Joint.JointName.SHOULDER_L:
-            case Joint.JointName.ARM_L:
-            case Joint.JointName.FOREARM_L:
-                return Quaternion.AngleAxis(90, Vector3.right);
-
-            case Joint.JointName.HAND_L:
-                return Quaternion.AngleAxis(180, Vector3.right);
-
-            case Joint.JointName.SHOULDER_R:
-            case Joint.JointName.ARM_R:
-            case Joint.JointName.FOREARM_R:
-                return Quaternion.AngleAxis(-90, Vector3.right);
-
-            case Joint.JointName.HAND_R:
-                return Quaternion.identity;
-
-            default:
-                return Quaternion.identity;
-        }
-    }
 
     // ## METHODS ##
 
@@ -259,19 +207,17 @@ public class Avatar : MonoBehaviour
         private JointConfidence confidence;
 
         private Quaternion localTPoseRotation;
-        private Quaternion localKinectRotationInverse;
 
         private Transform jointTransform, rootTransform;
 
         // ## CONSTRUCTOR ##
 
-        public Joint(JointName _name, Transform _jointTransform, Quaternion _localTPoseRotation, Quaternion _localKinectRotationInverse, Transform _rootTransform)
+        public Joint(JointName _name, Transform _jointTransform, Quaternion _localTPoseRotation, Transform _rootTransform)
         {
 
             name = _name;
             jointTransform = _jointTransform;
             localTPoseRotation = _localTPoseRotation;
-            localKinectRotationInverse = _localKinectRotationInverse;
             rootTransform = _rootTransform;
 
         }
@@ -288,12 +234,13 @@ public class Avatar : MonoBehaviour
         public void updateRotation()
         {
 
-            Quaternion rotation = ConvertKinectRotation(globalRotation);
-            rotation *= localKinectRotationInverse;
+            Quaternion rotation = globalRotation;
+
             rotation *= localTPoseRotation;
 
             Quaternion invParentRotationInCharacterSpace = Quaternion.identity;
             Transform t = jointTransform;
+
             while (!ReferenceEquals(t, rootTransform))
             {
 
@@ -309,38 +256,10 @@ public class Avatar : MonoBehaviour
 
         // ## GETTER AND SETTER ##
 
-        public void setRootTransform(Transform value)
-        {
-
-            rootTransform = value;
-
-        }
-
-        public void setName(JointName value)
-        {
-
-            name = value;
-
-        }
-
-        public JointName getName()
-        {
-
-            return name;
-
-        }
-
         public void setGlobalPosition(Vector3 value)
         {
 
             globalPosition = value;
-
-        }
-
-        public Vector3 getGlobalPosition()
-        {
-
-            return globalPosition;
 
         }
 
@@ -349,58 +268,6 @@ public class Avatar : MonoBehaviour
 
             globalRotation = value;
 
-        }
-
-        public Quaternion getGlobalRotation()
-        {
-
-            return globalRotation;
-
-        }
-
-        public void setConfidence(JointConfidence value)
-        {
-
-            confidence = value;
-
-        }
-
-        public JointConfidence getConfidence()
-        {
-
-            return confidence;
-
-        }
-
-        public void setLocalTPoseRotation(Quaternion value)
-        {
-
-            localTPoseRotation = value;
-
-        }
-
-        public Quaternion getLocalTPoseRotation()
-        {
-
-            return localTPoseRotation;
-
-        }
-
-        public Transform getTransform()
-        {
-
-            return jointTransform;
-
-        }
-
-        // ## UTIL ##
-
-        private Quaternion ConvertKinectRotation(Quaternion value)
-        {
-            // Kinect coordinate system for rotations seems to be
-            // left-handed Y+ up, Z+ towards camera
-            // So apply 180 rotation around Y to align with Unity coords (Z away from camera)
-            return Quaternion.AngleAxis(180, Vector3.up) * new Quaternion(value.x, value.y, value.z, value.w);
         }
 
         // ## DATA TYPES ##

@@ -112,6 +112,8 @@ public class AvatarManager : MonoBehaviour
                 avatarPool.Remove(currAvatar.Key);
                 Destroy(currAvatar.Value);
 
+                Debug.Log("[INFO]: AvatarManager::OnReceiveSkeleton(): Removed avatar with id = " + currAvatar.Key);
+
                 return;
 
             }
