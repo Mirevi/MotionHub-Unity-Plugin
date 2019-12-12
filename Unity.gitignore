@@ -58,6 +58,6 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
-/Libary/PackageCache/*
-/Libary/metadata/*
-/Libary/ShaderCache/*
+/Library/PackageCache/*
+/Library/metadata/*
+/Library/ShaderCache/*
