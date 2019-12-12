@@ -61,3 +61,5 @@ crashlytics-build.properties
 /Library/PackageCache/*
 /Library/metadata/*
 /Library/ShaderCache/*
+
+*.asset
