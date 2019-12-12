@@ -195,4 +195,32 @@ public class AvatarManager : MonoBehaviour
             }
         }
     }
+
+    public void toggleShowAvatarName(bool value)
+    {
+
+        debugShowAvatarName = value;
+
+    }
+
+    public void toggleShowAvatarPosition(bool value)
+    {
+
+        debugShowAvatarPosition = value;
+
+    }
+
+    public void toggleShowJoint(bool value)
+    {
+
+        debugShowJoint = value;
+
+    }
+
+    public void toggleShowJointName(bool value)
+    {
+
+        debugShowJointName = value;
+
+    }
 }
