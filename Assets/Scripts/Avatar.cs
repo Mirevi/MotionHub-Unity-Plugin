@@ -9,6 +9,8 @@ public class Avatar : MonoBehaviour
 
     // ## MEMBER ##
 
+    public Material debugMaterial;
+
     private int id;
     private string name;
 
@@ -18,6 +20,7 @@ public class Avatar : MonoBehaviour
     private Transform rootTransform;
 
     private float timeLastUpdated = 0.0f;
+    private bool isDebugEnabled = false;
 
     // ## INITIALIZATION ##
 
@@ -79,7 +82,7 @@ public class Avatar : MonoBehaviour
         }
 
         // return new joint with localTPoseRotation and localKinectRotationInverse
-        return new Joint(jointType, transform, localTPoseRotation, rootTransform);
+        return new Joint(jointType, transform, localTPoseRotation, rootTransform, debugMaterial);
 
     }
 
@@ -152,7 +155,41 @@ public class Avatar : MonoBehaviour
 
     }
 
+    public Joint getJoint(Joint.JointName key)
+    {
+
+        Joint joint;
+        jointPool.TryGetValue(key, out joint);
+
+        return joint; 
+
+    }
+
+    public Dictionary<Joint.JointName, Joint> getJointPool()
+    {
+
+        return jointPool;
+
+    }
+
     // ## UTIL ##
+
+    public void toggleDebug(bool value)
+    {
+
+        if(isDebugEnabled != value)
+        {
+
+            isDebugEnabled = value;
+
+            foreach (KeyValuePair<Joint.JointName, Joint> currJoint in jointPool)
+            {
+
+                currJoint.Value.enableDebugMesh(isDebugEnabled);
+
+            }
+        }
+    }
 
     private Vector3 ConvertKinectPosition(Vector3 value)
     {
@@ -210,15 +247,28 @@ public class Avatar : MonoBehaviour
 
         private Transform jointTransform, rootTransform;
 
+        private GameObject debugMesh;
+
         // ## CONSTRUCTOR ##
 
-        public Joint(JointName _name, Transform _jointTransform, Quaternion _localTPoseRotation, Transform _rootTransform)
+        public Joint(JointName _name, Transform _jointTransform, Quaternion _localTPoseRotation, Transform _rootTransform, Material _debugMaterial)
         {
 
             name = _name;
             jointTransform = _jointTransform;
             localTPoseRotation = _localTPoseRotation;
             rootTransform = _rootTransform;
+
+            debugMesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+            debugMesh.transform.parent = jointTransform;
+            debugMesh.transform.localScale = Vector3.one * 0.075f;
+            debugMesh.transform.localPosition = Vector3.zero;
+
+            debugMesh.GetComponent<MeshRenderer>().material = _debugMaterial;
+            Destroy(debugMesh.GetComponent<BoxCollider>());
+
+            debugMesh.SetActive(false);
 
         }
                   
@@ -267,6 +317,20 @@ public class Avatar : MonoBehaviour
         {
 
             globalRotation = value;
+
+        }
+
+        public Transform getTransform()
+        {
+
+            return jointTransform;
+
+        }
+
+        public void enableDebugMesh(bool value)
+        {
+
+            debugMesh.SetActive(value);
 
         }
 

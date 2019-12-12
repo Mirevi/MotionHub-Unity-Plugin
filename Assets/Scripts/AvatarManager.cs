@@ -14,8 +14,19 @@ public class AvatarManager : MonoBehaviour
     [Range(0.01f, 10.0f)]
     public float timeout = 0.25f; 
 
+    private Camera mainCam;
+
+    public bool debugShowAvatarName = false;
+    public bool debugShowAvatarPosition = false;
+    public bool debugShowJoint = false;
+    public bool debugShowJointName = false;
+
+    public Font debugFontLarge, debugFontSmall;
+
     void Start() 
     {
+
+        mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
 
         // init avatar pool
         avatarPool = new Dictionary<int, GameObject>();
@@ -122,6 +133,65 @@ public class AvatarManager : MonoBehaviour
 
                 currAvatarClass.addTimeLastUpdated();
 
+            }
+        }
+    }
+
+    private void OnGUI()
+    {
+
+        Vector3 screenSpace;
+
+        foreach (KeyValuePair<int, GameObject> currAvatar in avatarPool)
+        {
+
+            if (currAvatar.Value != null)
+            {
+
+                if (debugShowAvatarName)
+                {
+
+                    GUI.skin.font = debugFontLarge;
+                    GUI.color = Color.black;
+
+                    screenSpace = mainCam.WorldToScreenPoint(currAvatar.Value.GetComponent<Avatar>().getJoint(Avatar.Joint.JointName.HEAD).getTransform().position);
+
+                    if (screenSpace.x > 0 && screenSpace.x < Screen.width && screenSpace.y > 0 && screenSpace.y < Screen.height && screenSpace.z > 0)
+                        GUI.Label(new Rect(screenSpace.x - 32, Screen.height - screenSpace.y - 96, 128, 64), currAvatar.Value.name);
+
+                }
+
+                if (debugShowAvatarPosition)
+                {
+
+                    GUI.skin.font = debugFontSmall;
+                    GUI.color = Color.black;
+
+                    screenSpace = mainCam.WorldToScreenPoint(currAvatar.Value.GetComponent<Avatar>().getJoint(Avatar.Joint.JointName.HEAD).getTransform().position);
+
+                    if (screenSpace.x > 0 && screenSpace.x < Screen.width && screenSpace.y > 0 && screenSpace.y < Screen.height && screenSpace.z > 0)
+                        GUI.Label(new Rect(screenSpace.x - 32, Screen.height - screenSpace.y - 64, 128, 64), currAvatar.Value.GetComponent<Avatar>().getJoint(Avatar.Joint.JointName.HIPS).getTransform().position.ToString());
+
+                }
+
+                currAvatar.Value.GetComponent<Avatar>().toggleDebug(debugShowJoint);
+
+                if (debugShowJointName)
+                {
+
+                    GUI.skin.font = debugFontSmall;
+                    GUI.color = Color.white;
+
+                    foreach (KeyValuePair<Avatar.Joint.JointName, Avatar.Joint> currJoint in currAvatar.Value.GetComponent<Avatar>().getJointPool())
+                    {
+
+                        screenSpace = mainCam.WorldToScreenPoint(currJoint.Value.getTransform().position);
+
+                        if (screenSpace.x > 0 && screenSpace.x < Screen.width && screenSpace.y > 0 && screenSpace.y < Screen.height && screenSpace.z > 0)
+                            GUI.Label(new Rect(screenSpace.x, Screen.height - screenSpace.y, 128, 64), currJoint.Key.ToString());
+
+                    }
+                }
             }
         }
     }
