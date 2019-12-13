@@ -182,12 +182,21 @@ public class Avatar : MonoBehaviour
 
             isDebugEnabled = value;
 
-            foreach (KeyValuePair<Joint.JointName, Joint> currJoint in jointPool)
-            {
+            // currJoint.Value.enableDebugMesh(isDebugEnabled);
 
-                currJoint.Value.enableDebugMesh(isDebugEnabled);
+        }
+    }
 
-            }
+    public void toggleShowAvatar(bool value)
+    {
+
+        Renderer avatarRenderer = transform.GetChild(0).gameObject.GetComponent<Renderer>();
+
+        if (avatarRenderer.enabled != value)
+        {
+
+            avatarRenderer.enabled = value;
+
         }
     }
 
@@ -228,6 +237,26 @@ public class Avatar : MonoBehaviour
             case Joint.JointName.FOREARM_R: return HumanBodyBones.RightLowerArm;
             case Joint.JointName.HAND_R: return HumanBodyBones.RightHand;
             default: return HumanBodyBones.LastBone;
+        }
+    }
+
+    // ## UI ##
+
+    private void OnDrawGizmos()
+    {
+
+        if(isDebugEnabled)
+        {
+
+            foreach (KeyValuePair<Joint.JointName, Joint> currJoint in jointPool)
+            {
+
+                Gizmos.color = Color.white;
+
+                if(currJoint.Value.getTransform() != rootTransform)
+                    Gizmos.DrawLine(currJoint.Value.getTransform().parent.position, currJoint.Value.getTransform().position);
+
+            }
         }
     }
 

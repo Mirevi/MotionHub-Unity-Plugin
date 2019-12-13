@@ -18,6 +18,7 @@ public class AvatarManager : MonoBehaviour
 
     public bool debugShowAvatarName = false;
     public bool debugShowAvatarPosition = false;
+    public bool debugShowAvatar = true;
     public bool debugShowJoint = false;
     public bool debugShowJointName = false;
 
@@ -174,13 +175,15 @@ public class AvatarManager : MonoBehaviour
 
                 }
 
+                currAvatar.Value.GetComponent<Avatar>().toggleShowAvatar(debugShowAvatar);
+
                 currAvatar.Value.GetComponent<Avatar>().toggleDebug(debugShowJoint);
 
                 if (debugShowJointName)
                 {
 
                     GUI.skin.font = debugFontSmall;
-                    GUI.color = Color.white;
+                    GUI.color = Color.gray;
 
                     foreach (KeyValuePair<Avatar.Joint.JointName, Avatar.Joint> currJoint in currAvatar.Value.GetComponent<Avatar>().getJointPool())
                     {
@@ -207,6 +210,13 @@ public class AvatarManager : MonoBehaviour
     {
 
         debugShowAvatarPosition = value;
+
+    }
+
+    public void toggleShowAvatar(bool value)
+    {
+
+        debugShowAvatar = value;
 
     }
 
