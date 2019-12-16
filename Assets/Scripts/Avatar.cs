@@ -182,8 +182,13 @@ public class Avatar : MonoBehaviour
 
             isDebugEnabled = value;
 
-            // currJoint.Value.enableDebugMesh(isDebugEnabled);
 
+            foreach (KeyValuePair<Joint.JointName, Joint> currJoint in jointPool)
+            {
+
+                currJoint.Value.enableDebugMesh(isDebugEnabled);
+
+            }
         }
     }
 
