@@ -103,6 +103,13 @@ public class Avatar : MonoBehaviour
     public void updateAvatar()      
     {
 
+        if (!isInit)
+        {
+
+            return;
+
+        }
+
         jointPool[Joint.JointName.HIPS].updatePosition();
 
         foreach (KeyValuePair<Joint.JointName, Joint> currentJoint in jointPool)
@@ -134,6 +141,13 @@ public class Avatar : MonoBehaviour
 
     public void setJointPose(Joint.JointName jointName, Vector3 position, Quaternion rotation)
     {
+
+        if (!isInit)
+        {
+
+            return;
+
+        }
 
         Joint currentJoint;
 
@@ -178,12 +192,6 @@ public class Avatar : MonoBehaviour
 
     }
 
-    public bool getIsInit()
-    {
-
-        return isInit;
-
-    }
 
     // ## UTIL ##
 

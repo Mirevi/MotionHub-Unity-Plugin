@@ -65,36 +65,35 @@ public class AvatarManager : MonoBehaviour
             // get avatar class refference
             currAvatar = currAvatarObject.GetComponent<Avatar>();
 
-            if(currAvatar.getIsInit() == true)
-            { 
 
-                Vector3 globalPositionJoint;
-                Quaternion globalRotationJoint;
 
-                // loop through all joints and update joint pose
-                for (int indexJoint = 0; indexJoint < 21; indexJoint++)
-                {
+            Vector3 globalPositionJoint;
+            Quaternion globalRotationJoint;
 
-                    // get global position
-                    globalPositionJoint = new Vector3(
-                                                message.GetFloat(indexJoint * 8 + 1),
-                                                message.GetFloat(indexJoint * 8 + 2),
-                                                message.GetFloat(indexJoint * 8 + 3)
+            // loop through all joints and update joint pose
+            for (int indexJoint = 0; indexJoint < 21; indexJoint++)
+            {
+
+                // get global position
+                globalPositionJoint = new Vector3(
+                                    -1.0f * message.GetFloat(indexJoint * 8 + 1),
+                                            message.GetFloat(indexJoint * 8 + 2),
+                                            message.GetFloat(indexJoint * 8 + 3)
+                                            );
+
+                // get global rotation
+                globalRotationJoint = new Quaternion(
+                                                message.GetFloat(indexJoint * 8 + 4),
+                                                message.GetFloat(indexJoint * 8 + 5),
+                                                message.GetFloat(indexJoint * 8 + 6),
+                                                message.GetFloat(indexJoint * 8 + 7)
                                                 );
 
-                    // get global rotation
-                    globalRotationJoint = new Quaternion(
-                                                    message.GetFloat(indexJoint * 8 + 4),
-                                                    message.GetFloat(indexJoint * 8 + 5),
-                                                    message.GetFloat(indexJoint * 8 + 6),
-                                                    message.GetFloat(indexJoint * 8 + 7)
-                                                    );
+                // set joint pose
+                currAvatar.setJointPose((Avatar.Joint.JointName)indexJoint, globalPositionJoint, globalRotationJoint);
 
-                    // set joint pose
-                    currAvatar.setJointPose((Avatar.Joint.JointName)indexJoint, globalPositionJoint, globalRotationJoint);
+            }  
 
-                }  
-            }
 
             // update joint pose
             currAvatar.updateAvatar();
