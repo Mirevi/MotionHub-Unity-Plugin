@@ -11,6 +11,8 @@ public class Avatar : MonoBehaviour
 
     public Material debugMaterial;
 
+    public GameObject debugMeshAxis;
+
     private int id;
     private string name;
 
@@ -21,6 +23,7 @@ public class Avatar : MonoBehaviour
 
     private float timeLastUpdated = 0.0f;
     private bool isDebugEnabled = false;
+    private bool isInit = false;
 
     // ## INITIALIZATION ##
 
@@ -60,6 +63,9 @@ public class Avatar : MonoBehaviour
 
             }
         }
+
+        isInit = true;
+
     }
 
     private Joint GetJointData(Joint.JointName jointType, Animator animator)
@@ -82,7 +88,7 @@ public class Avatar : MonoBehaviour
         }
 
         // return new joint with localTPoseRotation and localKinectRotationInverse
-        return new Joint(jointType, transform, localTPoseRotation, rootTransform, debugMaterial);
+        return new Joint(jointType, transform, localTPoseRotation, rootTransform, debugMaterial, debugMeshAxis);
 
     }
 
@@ -134,7 +140,7 @@ public class Avatar : MonoBehaviour
         if (jointPool.TryGetValue(jointName, out currentJoint))
         {
 
-            currentJoint.setGlobalPosition(ConvertKinectPosition(position));
+            currentJoint.setGlobalPosition(position);
 
             currentJoint.setGlobalRotation(rotation);
 
@@ -172,6 +178,13 @@ public class Avatar : MonoBehaviour
 
     }
 
+    public bool getIsInit()
+    {
+
+        return isInit;
+
+    }
+
     // ## UTIL ##
 
     public void toggleDebug(bool value)
@@ -203,16 +216,6 @@ public class Avatar : MonoBehaviour
             avatarRenderer.enabled = value;
 
         }
-    }
-
-    private Vector3 ConvertKinectPosition(Vector3 value)
-    {
-        // Kinect Y axis points down, so negate Y coordinate
-        // Scale to convert millimeters to meters
-        // https://docs.microsoft.com/en-us/azure/Kinect-dk/coordinate-systems
-        // Other transforms (positioning of the skeleton in the scene, mirroring)
-        // are handled by properties of ascendant GameObject's
-        return new Vector3(-value.x, value.y, -value.z);
     }
 
     private HumanBodyBones MapKinectJoint(Joint.JointName joint)
@@ -256,7 +259,7 @@ public class Avatar : MonoBehaviour
             foreach (KeyValuePair<Joint.JointName, Joint> currJoint in jointPool)
             {
 
-                Gizmos.color = Color.white;
+                Gizmos.color = Color.black;
 
                 if(currJoint.Value.getTransform() != rootTransform)
                     Gizmos.DrawLine(currJoint.Value.getTransform().parent.position, currJoint.Value.getTransform().position);
@@ -285,7 +288,7 @@ public class Avatar : MonoBehaviour
 
         // ## CONSTRUCTOR ##
 
-        public Joint(JointName _name, Transform _jointTransform, Quaternion _localTPoseRotation, Transform _rootTransform, Material _debugMaterial)
+        public Joint(JointName _name, Transform _jointTransform, Quaternion _localTPoseRotation, Transform _rootTransform, Material _debugMaterial, GameObject _debugMeshAxis)
         {
 
             name = _name;
@@ -293,14 +296,29 @@ public class Avatar : MonoBehaviour
             localTPoseRotation = _localTPoseRotation;
             rootTransform = _rootTransform;
 
-            debugMesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            if(_debugMeshAxis == null)
+            {
 
-            debugMesh.transform.parent = jointTransform;
-            debugMesh.transform.localScale = Vector3.one * 0.075f;
-            debugMesh.transform.localPosition = Vector3.zero;
+                debugMesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
-            debugMesh.GetComponent<MeshRenderer>().material = _debugMaterial;
-            Destroy(debugMesh.GetComponent<BoxCollider>());
+                debugMesh.transform.parent = jointTransform;
+                debugMesh.transform.localScale = Vector3.one * 0.075f;
+                debugMesh.transform.localPosition = Vector3.zero;
+
+                debugMesh.GetComponent<MeshRenderer>().material = _debugMaterial;
+                Destroy(debugMesh.GetComponent<BoxCollider>());
+
+
+            }
+            else
+            {
+
+                debugMesh = Instantiate(_debugMeshAxis, jointTransform);
+                debugMesh.transform.localPosition = Vector3.zero;
+
+                debugMesh.GetComponent<MeshRenderer>().material = _debugMaterial;
+
+            }
 
             debugMesh.SetActive(false);
 

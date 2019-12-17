@@ -24,13 +24,21 @@ public class AvatarManager : MonoBehaviour
 
     public Font debugFontLarge, debugFontSmall;
 
-    void Start() 
+
+    private void Awake()
     {
+
 
         mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
 
         // init avatar pool
         avatarPool = new Dictionary<int, GameObject>();
+
+    }
+
+    void Start() 
+    {
+
 
         // find oscmanager refference
         oscmanager = GameObject.Find("$oscmanager").GetComponent<OSC>();
@@ -57,31 +65,35 @@ public class AvatarManager : MonoBehaviour
             // get avatar class refference
             currAvatar = currAvatarObject.GetComponent<Avatar>();
 
-            Vector3 globalPositionJoint;
-            Quaternion globalRotationJoint;
+            if(currAvatar.getIsInit() == true)
+            { 
 
-            // loop through all joints and update joint pose
-            for (int indexJoint = 0; indexJoint < 21; indexJoint++) 
-            {
+                Vector3 globalPositionJoint;
+                Quaternion globalRotationJoint;
 
-                // get global position
-                globalPositionJoint = new Vector3(
-                                            message.GetFloat(indexJoint * 8 + 1),
-                                            message.GetFloat(indexJoint * 8 + 2),
-                                            message.GetFloat(indexJoint * 8 + 3)
-                                            );
+                // loop through all joints and update joint pose
+                for (int indexJoint = 0; indexJoint < 21; indexJoint++)
+                {
 
-                // get global rotation
-                globalRotationJoint = new Quaternion(
-                                                message.GetFloat(indexJoint * 8 + 4),
-                                                message.GetFloat(indexJoint * 8 + 5),
-                                                message.GetFloat(indexJoint * 8 + 6),
-                                                message.GetFloat(indexJoint * 8 + 7)
+                    // get global position
+                    globalPositionJoint = new Vector3(
+                                                message.GetFloat(indexJoint * 8 + 1),
+                                                message.GetFloat(indexJoint * 8 + 2),
+                                                message.GetFloat(indexJoint * 8 + 3)
                                                 );
 
-                // set joint pose
-                currAvatar.setJointPose((Avatar.Joint.JointName)indexJoint, globalPositionJoint, globalRotationJoint);                
+                    // get global rotation
+                    globalRotationJoint = new Quaternion(
+                                                    message.GetFloat(indexJoint * 8 + 4),
+                                                    message.GetFloat(indexJoint * 8 + 5),
+                                                    message.GetFloat(indexJoint * 8 + 6),
+                                                    message.GetFloat(indexJoint * 8 + 7)
+                                                    );
 
+                    // set joint pose
+                    currAvatar.setJointPose((Avatar.Joint.JointName)indexJoint, globalPositionJoint, globalRotationJoint);
+
+                }  
             }
 
             // update joint pose
