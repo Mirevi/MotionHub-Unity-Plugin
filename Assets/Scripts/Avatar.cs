@@ -13,7 +13,10 @@ public class Avatar : MonoBehaviour
 
     public GameObject debugMeshAxis;
 
-    private int id;
+    public int skeletonID;
+    public int trackerID;
+
+
     private string name;
 
     // list of joint pools
@@ -128,7 +131,7 @@ public class Avatar : MonoBehaviour
     public void setId(int value)
     {
 
-        id = value;
+        skeletonID = value;
 
     }
 
@@ -337,7 +340,7 @@ public class Avatar : MonoBehaviour
         public void updatePosition()
         {
 
-            jointTransform.position = globalPosition;
+            jointTransform.localPosition = globalPosition;
 
         }
 

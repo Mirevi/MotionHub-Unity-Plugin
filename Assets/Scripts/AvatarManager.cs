@@ -79,7 +79,7 @@ public class AvatarManager : MonoBehaviour
                                     -1.0f * message.GetFloat(indexJoint * 8 + 1),
                                             message.GetFloat(indexJoint * 8 + 2),
                                             message.GetFloat(indexJoint * 8 + 3)
-                                            );
+                                                 );
 
                 // get global rotation
                 globalRotationJoint = new Quaternion(
@@ -87,7 +87,7 @@ public class AvatarManager : MonoBehaviour
                                                 message.GetFloat(indexJoint * 8 + 5),
                                                 message.GetFloat(indexJoint * 8 + 6),
                                                 message.GetFloat(indexJoint * 8 + 7)
-                                                );
+                                                    );
 
                 // set joint pose
                 currAvatar.setJointPose((Avatar.Joint.JointName)indexJoint, globalPositionJoint, globalRotationJoint);
@@ -113,6 +113,13 @@ public class AvatarManager : MonoBehaviour
             // set avatar object name and refference in class
             currAvatarObject.name   = "avatar_" + id;
             currAvatar.setName("avatar_" + id);
+
+            int currTrackerID = (int)Mathf.Floor(id / 1000.0f);
+
+
+            currAvatar.trackerID = currTrackerID;
+
+            currAvatar.skeletonID = id - currTrackerID * 1000;
 
             Debug.Log("[INFO]: AvatarManager::OnReceiveSkeleton(): Created new avatar with id = " + id);
 
@@ -154,7 +161,9 @@ public class AvatarManager : MonoBehaviour
 
         Vector3 screenSpace;
 
-        foreach (KeyValuePair<int, GameObject> currAvatar in avatarPool)
+        Dictionary<int, GameObject> avatarPoolCopy = avatarPool;
+
+        foreach (KeyValuePair<int, GameObject> currAvatar in avatarPoolCopy)
         {
 
             if (currAvatar.Value != null)
@@ -169,7 +178,7 @@ public class AvatarManager : MonoBehaviour
                     screenSpace = mainCam.WorldToScreenPoint(currAvatar.Value.GetComponent<Avatar>().getJoint(Avatar.Joint.JointName.HEAD).getTransform().position);
 
                     if (screenSpace.x > 0 && screenSpace.x < Screen.width && screenSpace.y > 0 && screenSpace.y < Screen.height && screenSpace.z > 0)
-                        GUI.Label(new Rect(screenSpace.x - 32, Screen.height - screenSpace.y - 96, 128, 64), currAvatar.Value.name);
+                        GUI.Label(new Rect(screenSpace.x - 32, Screen.height - screenSpace.y - 96, 256, 64), currAvatar.Value.name);
 
                 }
 
