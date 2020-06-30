@@ -470,8 +470,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5854c34d94a990408d86799c3291723, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  id: 0
-  name: 
+  debugMaterial: {fileID: 2100000, guid: 09b6992b5d719d4478f864a3b7cc78c8, type: 2}
+  debugMeshAxis: {fileID: 6061093896223660362, guid: 7e5c8d1ef60d0f242894290a5ea21eff,
+    type: 3}
 --- !u!1 &2814330032024314751
 GameObject:
   m_ObjectHideFlags: 0
@@ -1252,7 +1253,7 @@ SkinnedMeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6164784400734849153}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_MotionVectors: 1
@@ -1269,6 +1270,7 @@ SkinnedMeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0

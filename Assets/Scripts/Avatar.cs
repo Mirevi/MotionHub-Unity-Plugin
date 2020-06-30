@@ -9,7 +9,14 @@ public class Avatar : MonoBehaviour
 
     // ## MEMBER ##
 
-    private int id;
+    public Material debugMaterial;
+
+    public GameObject debugMeshAxis;
+
+    public int skeletonID;
+    public int trackerID;
+
+
     private string name;
 
     // list of joint pools
@@ -18,6 +25,8 @@ public class Avatar : MonoBehaviour
     private Transform rootTransform;
 
     private float timeLastUpdated = 0.0f;
+    private bool isDebugEnabled = false;
+    private bool isInit = false;
 
     // ## INITIALIZATION ##
 
@@ -57,6 +66,9 @@ public class Avatar : MonoBehaviour
 
             }
         }
+
+        isInit = true;
+
     }
 
     private Joint GetJointData(Joint.JointName jointType, Animator animator)
@@ -78,65 +90,13 @@ public class Avatar : MonoBehaviour
             localTPoseRotation = GetSkeletonBone(animator, t.name).rotation * localTPoseRotation;
         }
 
-        Quaternion localKinectRotationInverse = GetLocalKinectRotationInverse(jointType);
-
         // return new joint with localTPoseRotation and localKinectRotationInverse
-        return new Joint(jointType, transform, localTPoseRotation, localKinectRotationInverse, rootTransform);
+        return new Joint(jointType, transform, localTPoseRotation, rootTransform, debugMaterial, debugMeshAxis);
 
     }
 
     private static SkeletonBone GetSkeletonBone(Animator animator, string boneName) => animator.avatar.humanDescription.skeleton.First(sb => sb.name == boneName);
 
-    private Quaternion GetLocalKinectRotationInverse(Joint.JointName jointType)
-    {
-        // Used this page as reference for T-pose orientations
-        // https://docs.microsoft.com/en-us/azure/Kinect-dk/body-joints
-        // Assuming T-pose as body facing Z+, with head at Y+. Same for target character
-        // Coordinate system seems to be left-handed not right handed as depicted
-        // Thus inverse T-pose rotation should align Y and Z axes of depicted local coords for a joint with body coords in T-pose
-        switch (jointType)
-        {
-            case Joint.JointName.HIPS:
-            case Joint.JointName.SPINE:
-            case Joint.JointName.CHEST:
-            case Joint.JointName.NECK:
-            case Joint.JointName.HEAD:
-            case Joint.JointName.UPLEG_L:
-            case Joint.JointName.LEG_L:
-            case Joint.JointName.FOOT_L:
-                return Quaternion.AngleAxis(90, Vector3.forward) * Quaternion.AngleAxis(-90, Vector3.up);
-
-            case Joint.JointName.TOE_L:
-                return Quaternion.AngleAxis(-90, Vector3.up);
-
-            case Joint.JointName.UPLEG_R:
-            case Joint.JointName.LEG_R:
-            case Joint.JointName.FOOT_R:
-                return Quaternion.AngleAxis(-90, Vector3.forward) * Quaternion.AngleAxis(-90, Vector3.up);
-
-            case Joint.JointName.TOE_R:
-                return Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.AngleAxis(-90, Vector3.up);
-
-            case Joint.JointName.SHOULDER_L:
-            case Joint.JointName.ARM_L:
-            case Joint.JointName.FOREARM_L:
-                return Quaternion.AngleAxis(90, Vector3.right);
-
-            case Joint.JointName.HAND_L:
-                return Quaternion.AngleAxis(180, Vector3.right);
-
-            case Joint.JointName.SHOULDER_R:
-            case Joint.JointName.ARM_R:
-            case Joint.JointName.FOREARM_R:
-                return Quaternion.AngleAxis(-90, Vector3.right);
-
-            case Joint.JointName.HAND_R:
-                return Quaternion.identity;
-
-            default:
-                return Quaternion.identity;
-        }
-    }
 
     // ## METHODS ##
 
@@ -145,6 +105,13 @@ public class Avatar : MonoBehaviour
     /// </summary>
     public void updateAvatar()      
     {
+
+        if (!isInit)
+        {
+
+            return;
+
+        }
 
         jointPool[Joint.JointName.HIPS].updatePosition();
 
@@ -164,7 +131,7 @@ public class Avatar : MonoBehaviour
     public void setId(int value)
     {
 
-        id = value;
+        skeletonID = value;
 
     }
 
@@ -178,12 +145,19 @@ public class Avatar : MonoBehaviour
     public void setJointPose(Joint.JointName jointName, Vector3 position, Quaternion rotation)
     {
 
+        if (!isInit)
+        {
+
+            return;
+
+        }
+
         Joint currentJoint;
 
         if (jointPool.TryGetValue(jointName, out currentJoint))
         {
 
-            currentJoint.setGlobalPosition(ConvertKinectPosition(position));
+            currentJoint.setGlobalPosition(position);
 
             currentJoint.setGlobalRotation(rotation);
 
@@ -204,16 +178,55 @@ public class Avatar : MonoBehaviour
 
     }
 
+    public Joint getJoint(Joint.JointName key)
+    {
+
+        Joint joint;
+        jointPool.TryGetValue(key, out joint);
+
+        return joint; 
+
+    }
+
+    public Dictionary<Joint.JointName, Joint> getJointPool()
+    {
+
+        return jointPool;
+
+    }
+
+
     // ## UTIL ##
 
-    private Vector3 ConvertKinectPosition(Vector3 value)
+    public void toggleDebug(bool value)
     {
-        // Kinect Y axis points down, so negate Y coordinate
-        // Scale to convert millimeters to meters
-        // https://docs.microsoft.com/en-us/azure/Kinect-dk/coordinate-systems
-        // Other transforms (positioning of the skeleton in the scene, mirroring)
-        // are handled by properties of ascendant GameObject's
-        return new Vector3(-value.x, value.y, -value.z);
+
+        if(isDebugEnabled != value)
+        {
+
+            isDebugEnabled = value;
+
+
+            foreach (KeyValuePair<Joint.JointName, Joint> currJoint in jointPool)
+            {
+
+                currJoint.Value.enableDebugMesh(isDebugEnabled);
+
+            }
+        }
+    }
+
+    public void toggleShowAvatar(bool value)
+    {
+
+        Renderer avatarRenderer = transform.GetChild(0).gameObject.GetComponent<Renderer>();
+
+        if (avatarRenderer.enabled != value)
+        {
+
+            avatarRenderer.enabled = value;
+
+        }
     }
 
     private HumanBodyBones MapKinectJoint(Joint.JointName joint)
@@ -246,6 +259,26 @@ public class Avatar : MonoBehaviour
         }
     }
 
+    // ## UI ##
+
+    private void OnDrawGizmos()
+    {
+
+        if(isDebugEnabled)
+        {
+
+            foreach (KeyValuePair<Joint.JointName, Joint> currJoint in jointPool)
+            {
+
+                Gizmos.color = Color.black;
+
+                if(currJoint.Value.getTransform() != rootTransform)
+                    Gizmos.DrawLine(currJoint.Value.getTransform().parent.position, currJoint.Value.getTransform().position);
+
+            }
+        }
+    }
+
     // ## DATA TYPES ##
 
     public class Joint
@@ -259,20 +292,46 @@ public class Avatar : MonoBehaviour
         private JointConfidence confidence;
 
         private Quaternion localTPoseRotation;
-        private Quaternion localKinectRotationInverse;
 
         private Transform jointTransform, rootTransform;
 
+        private GameObject debugMesh;
+
         // ## CONSTRUCTOR ##
 
-        public Joint(JointName _name, Transform _jointTransform, Quaternion _localTPoseRotation, Quaternion _localKinectRotationInverse, Transform _rootTransform)
+        public Joint(JointName _name, Transform _jointTransform, Quaternion _localTPoseRotation, Transform _rootTransform, Material _debugMaterial, GameObject _debugMeshAxis)
         {
 
             name = _name;
             jointTransform = _jointTransform;
             localTPoseRotation = _localTPoseRotation;
-            localKinectRotationInverse = _localKinectRotationInverse;
             rootTransform = _rootTransform;
+
+            if(_debugMeshAxis == null)
+            {
+
+                debugMesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+                debugMesh.transform.parent = jointTransform;
+                debugMesh.transform.localScale = Vector3.one * 0.075f;
+                debugMesh.transform.localPosition = Vector3.zero;
+
+                debugMesh.GetComponent<MeshRenderer>().material = _debugMaterial;
+                Destroy(debugMesh.GetComponent<BoxCollider>());
+
+
+            }
+            else
+            {
+
+                debugMesh = Instantiate(_debugMeshAxis, jointTransform);
+                debugMesh.transform.localPosition = Vector3.zero;
+
+                debugMesh.GetComponent<MeshRenderer>().material = _debugMaterial;
+
+            }
+
+            debugMesh.SetActive(false);
 
         }
                   
@@ -281,19 +340,20 @@ public class Avatar : MonoBehaviour
         public void updatePosition()
         {
 
-            jointTransform.position = globalPosition;
+            jointTransform.localPosition = globalPosition;
 
         }
 
         public void updateRotation()
         {
 
-            Quaternion rotation = ConvertKinectRotation(globalRotation);
-            rotation *= localKinectRotationInverse;
+            Quaternion rotation = globalRotation;
+
             rotation *= localTPoseRotation;
 
             Quaternion invParentRotationInCharacterSpace = Quaternion.identity;
             Transform t = jointTransform;
+
             while (!ReferenceEquals(t, rootTransform))
             {
 
@@ -309,38 +369,10 @@ public class Avatar : MonoBehaviour
 
         // ## GETTER AND SETTER ##
 
-        public void setRootTransform(Transform value)
-        {
-
-            rootTransform = value;
-
-        }
-
-        public void setName(JointName value)
-        {
-
-            name = value;
-
-        }
-
-        public JointName getName()
-        {
-
-            return name;
-
-        }
-
         public void setGlobalPosition(Vector3 value)
         {
 
             globalPosition = value;
-
-        }
-
-        public Vector3 getGlobalPosition()
-        {
-
-            return globalPosition;
 
         }
 
@@ -351,41 +383,6 @@ public class Avatar : MonoBehaviour
 
         }
 
-        public Quaternion getGlobalRotation()
-        {
-
-            return globalRotation;
-
-        }
-
-        public void setConfidence(JointConfidence value)
-        {
-
-            confidence = value;
-
-        }
-
-        public JointConfidence getConfidence()
-        {
-
-            return confidence;
-
-        }
-
-        public void setLocalTPoseRotation(Quaternion value)
-        {
-
-            localTPoseRotation = value;
-
-        }
-
-        public Quaternion getLocalTPoseRotation()
-        {
-
-            return localTPoseRotation;
-
-        }
-
         public Transform getTransform()
         {
 
@@ -393,14 +390,11 @@ public class Avatar : MonoBehaviour
 
         }
 
-        // ## UTIL ##
-
-        private Quaternion ConvertKinectRotation(Quaternion value)
+        public void enableDebugMesh(bool value)
         {
-            // Kinect coordinate system for rotations seems to be
-            // left-handed Y+ up, Z+ towards camera
-            // So apply 180 rotation around Y to align with Unity coords (Z away from camera)
-            return Quaternion.AngleAxis(180, Vector3.up) * new Quaternion(value.x, value.y, value.z, value.w);
+
+            debugMesh.SetActive(value);
+
         }
 
         // ## DATA TYPES ##
