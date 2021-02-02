@@ -92,6 +92,8 @@ public class AvatarManager : MonoBehaviour
                 // set joint pose
                 currAvatar.setJointPose((Avatar.Joint.JointName)indexJoint, globalPositionJoint, globalRotationJoint);
 
+
+
             }  
 
 

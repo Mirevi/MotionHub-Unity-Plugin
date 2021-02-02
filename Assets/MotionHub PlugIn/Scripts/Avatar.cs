@@ -362,8 +362,15 @@ public class Avatar : MonoBehaviour
 
             }
 
+
             //Must be in correct order!!
             jointTransform.localRotation = invParentRotationInCharacterSpace * rotation;
+
+            //if (name == JointName.SPINE)
+            //{
+            //    Debug.Log("Joint: " + name + ", rotation: " + jointTransform.localRotation.eulerAngles);
+
+            //}
 
         }
 

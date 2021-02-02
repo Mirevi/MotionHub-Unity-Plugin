@@ -603,7 +603,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   roatationSensitivity: 0.05
-  zoomSensitivity: 0.5
+  zoomSensitivity: 0.1
   pivot: {fileID: 1460233823}
 --- !u!1 &568832477
 GameObject:
