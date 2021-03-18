@@ -2,29 +2,32 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UiManager : MonoBehaviour
+namespace MMH
 {
-
-    public Canvas uiCanvas;
-    private bool isCanvasEnabled = false;
-
-    private void Start()
+    public class UiManager : MonoBehaviour
     {
 
-        uiCanvas.enabled = false;
+        public Canvas uiCanvas;
+        private bool isCanvasEnabled = false;
 
-    }
-
-    void Update()
-    {
-
-        if(Input.GetKeyDown(KeyCode.Backslash))
+        private void Start()
         {
 
-            isCanvasEnabled = !isCanvasEnabled;
+            uiCanvas.enabled = false;
 
-            uiCanvas.enabled = isCanvasEnabled;
+        }
 
-        }        
+        void Update()
+        {
+
+            if (Input.GetKeyDown(KeyCode.Backslash))
+            {
+
+                isCanvasEnabled = !isCanvasEnabled;
+
+                uiCanvas.enabled = isCanvasEnabled;
+
+            }
+        }
     }
 }
