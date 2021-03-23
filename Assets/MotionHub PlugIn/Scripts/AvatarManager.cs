@@ -78,17 +78,17 @@ namespace MMH
 
                     // get global position
                     globalPositionJoint = new Vector3(
-                                        -1.0f * message.GetFloat(indexJoint * 8 + 1),
+                                                -message.GetFloat(indexJoint * 8 + 1),
                                                 message.GetFloat(indexJoint * 8 + 2),
                                                 message.GetFloat(indexJoint * 8 + 3)
                                                      );
 
                     // get global rotation
                     globalRotationJoint = new Quaternion(
-                                                    message.GetFloat(indexJoint * 8 + 4),
-                                                    message.GetFloat(indexJoint * 8 + 5),
                                                     message.GetFloat(indexJoint * 8 + 6),
-                                                    message.GetFloat(indexJoint * 8 + 7)
+                                                    message.GetFloat(indexJoint * 8 + 7),
+                                                    message.GetFloat(indexJoint * 8 + 4),
+                                                    message.GetFloat(indexJoint * 8 + 5)
                                                         );
 
                     // set joint pose
