@@ -20,6 +20,9 @@ namespace MMH {
         OSC oscmanager;
 
         Dictionary<int, Point> pointPool;
+
+        [SerializeField]
+        int pointTypeMask = -1; // -1 == Everything
         #endregion
 
         #region MonoBehaviour Callbacks
@@ -55,6 +58,18 @@ namespace MMH {
         }
         #endregion
 
+        public int GetPointTypeMask() {
+            return pointTypeMask;
+        }
+
+        public void UpdatePointTypeMask(int mask) {
+            pointTypeMask = mask;
+        }
+
+        bool IsInPointTypeMask(int type) {
+            return pointTypeMask == (pointTypeMask | (1 << type));
+        }
+
         void OnReceivePoint(OscMessage message) {
 
             // get sent point count
@@ -83,6 +98,14 @@ namespace MMH {
                 // get valid flag
                 int valid = message.GetInt(i * 12 + 9);
 
+                // get point type
+                int type = message.GetInt(i * 12 + 10);
+
+                // skip point if configured in Enabled Types
+                if (!IsInPointTypeMask(type)) {
+                    continue;
+                }
+
                 // check if point is already present
                 Point currPoint;
                 pointPool.TryGetValue(id, out currPoint);
@@ -110,7 +133,7 @@ namespace MMH {
                     currPoint.pointID = id;
 
                     // set ccustom flags
-                    currPoint.SetType(message.GetInt(i * 12 + 10));
+                    currPoint.SetType(type);
                     currPoint.SetCustomInt(message.GetInt(i * 12 + 11));
                     currPoint.SetCustomFloat(message.GetFloat(i * 12 + 12));
 
