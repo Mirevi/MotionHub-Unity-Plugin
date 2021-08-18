@@ -11,14 +11,17 @@ namespace MMH {
 
         public Avatar.Joint.JointName jointName;
 
-        public int customInt;
-        public float customFloat;
+        public bool Active { get; private set; }
 
-        public bool Active;
+        #region Private Fields
+        int customInt;
+
+        float customFloat;
 
         GameObject debugMesh;
 
         GameObject debugSphere;
+        #endregion
 
         public enum PointType {
             Undefined,
@@ -32,14 +35,16 @@ namespace MMH {
 
         #region MonoBehaviour Callbacks
         void Awake() {
-            if (debugMeshAxis == null) {
+            // Init Mesh if configured
+            if (debugMeshAxis != null) {
+                debugMesh = Instantiate(debugMeshAxis, transform);
+            }
+            // Create Primitive if not
+            else { 
                 debugMesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
                 debugMesh.transform.parent = transform;
                 debugMesh.transform.localScale = Vector3.one * 0.075f;
-            } else {
-                debugMesh = Instantiate(debugMeshAxis, transform);
-
             }
 
             debugMesh.transform.localPosition = Vector3.zero;
@@ -47,14 +52,18 @@ namespace MMH {
                 debugMesh.GetComponent<MeshRenderer>().material = debugMaterial;
             }
 
+            // Create & Init Debug Sphere GameObject
             debugSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             debugSphere.transform.parent = transform;
             debugSphere.transform.localScale = Vector3.one * 0.075f;
             debugSphere.transform.localPosition = Vector3.zero;
 
+            // Assign Deug Material if configured
             if (debugMaterial != null) {
                 debugSphere.GetComponent<MeshRenderer>().material = debugMaterial;
             }
+
+            // Disable Debug Sphere
             debugSphere.SetActive(false);
         }
         #endregion
