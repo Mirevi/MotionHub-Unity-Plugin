@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace MMH {
-    public class Point : MonoBehaviour {
+    public class Point : Streamable {
 
         public int pointID;
 
@@ -14,17 +14,7 @@ namespace MMH {
         public int customInt;
         public float customFloat;
 
-        new string name;
-
-        float timeLastUpdated = 0.0f;
-
         public bool Active;
-
-        [SerializeField]
-        GameObject debugMeshAxis;
-
-        [SerializeField]
-        Material debugMaterial;
 
         GameObject debugMesh;
 
@@ -40,7 +30,7 @@ namespace MMH {
             Marker
         };
 
-
+        #region MonoBehaviour Callbacks
         void Awake() {
             if (debugMeshAxis == null) {
                 debugMesh = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -67,28 +57,16 @@ namespace MMH {
             }
             debugSphere.SetActive(false);
         }
+        #endregion
 
-        public void addTimeLastUpdated() {
-            timeLastUpdated += Time.deltaTime;
-        }
-
-        public float getTimeLastUpdated() {
-            return timeLastUpdated;
-        }
-
-        public void setName(string name) {
-            this.name = name;
-            gameObject.name = name;
-        }
-
-        public void setPose(Vector3 position, Quaternion rotation) {
+        public void SetPose(Vector3 position, Quaternion rotation) {
             transform.localPosition = position;
             transform.localRotation = rotation;
 
-            timeLastUpdated = 0.0f;
+            resetTimeLastUpdated();
         }
 
-        public void setType(int type) {
+        public void SetType(int type) {
             this.type = type;
             pointType = (PointType)type;
 
@@ -104,18 +82,39 @@ namespace MMH {
             }
         }
 
-        public void setValid(int valid) {
+        public bool GetValid() {
+            return Active;
+        }
+
+        public void SetValid(int valid) {
             Active = (valid == 1 ? true : false);
 
             if (valid == 1) {
-                setMeshActive(true);
+                SetMeshActive(true);
             } else {
-                setMeshActive(false);
+                SetMeshActive(false);
             }
         }
 
-        void setMeshActive(bool active) {
-            if(!active) {
+        public int GetCustomInt() {
+            return customInt;
+        }
+
+        public void SetCustomInt(int customInt) {
+            this.customInt = customInt;
+            jointName = (Avatar.Joint.JointName)customInt;
+        }
+
+        public float GetCustomFloat() {
+            return customFloat;
+        }
+
+        public void SetCustomFloat(float customFloat) {
+            this.customFloat = customFloat;
+        }
+
+        void SetMeshActive(bool active) {
+            if (!active) {
                 debugMesh.SetActive(false);
                 debugSphere.SetActive(false);
 
@@ -132,15 +131,6 @@ namespace MMH {
                     debugSphere.SetActive(false);
                     break;
             }
-        }
-
-        public void setCustomInt(int customInt) {
-            this.customInt = customInt;
-            jointName = (Avatar.Joint.JointName)customInt;
-        }
-
-        public void setCustomFloat(float customFloat) {
-            this.customFloat = customFloat;
         }
     }
 }

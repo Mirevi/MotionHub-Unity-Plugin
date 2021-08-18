@@ -6,27 +6,19 @@ using UnityEngine;
 
 namespace MMH
 {
-    public class Avatar : MonoBehaviour
+    public class Avatar : Streamable
     {
 
         // ## MEMBER ##
-
-        public Material debugMaterial;
-
-        public GameObject debugMeshAxis;
-
         public int skeletonID;
         public int trackerID;
 
-
-        private string name;
 
         // list of joint pools
         private Dictionary<Joint.JointName, Joint> jointPool;
 
         private Transform rootTransform;
 
-        private float timeLastUpdated = 0.0f;
         private bool isDebugEnabled = false;
         private bool isInit = false;
 
@@ -124,7 +116,7 @@ namespace MMH
 
             }
 
-            timeLastUpdated = 0.0f;
+            resetTimeLastUpdated();
 
         }
 
@@ -164,20 +156,6 @@ namespace MMH
                 currentJoint.setGlobalRotation(rotation);
 
             }
-        }
-
-        public void addTimeLastUpdated()
-        {
-
-            timeLastUpdated += Time.deltaTime;
-
-        }
-
-        public float getTimeLastUpdated()
-        {
-
-            return timeLastUpdated;
-
         }
 
         public Joint getJoint(Joint.JointName key)
